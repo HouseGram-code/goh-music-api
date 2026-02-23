@@ -4,8 +4,11 @@ import Navbar from '@/components/Navbar';
 import { motion } from 'motion/react';
 import { Music, Zap, Shield, Code, ArrowRight, Play, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/LanguageContext';
 
 export default function HomePage() {
+  const { t } = useTranslation();
+
   return (
     <div className="relative overflow-hidden">
       <Navbar />
@@ -25,7 +28,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-6"
             >
               <Sparkles className="w-3 h-3" />
-              v1.0 Now Live
+              {t.hero.badge}
             </motion.div>
             
             <motion.h1
@@ -34,9 +37,9 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-6xl md:text-8xl font-display font-bold tracking-tight mb-8 leading-[0.9]"
             >
-              Transform Music <br />
+              {t.hero.title} <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
-                With a Single API call.
+                {t.hero.subtitle}
               </span>
             </motion.h1>
             
@@ -46,8 +49,7 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="max-w-2xl mx-auto text-lg text-slate-400 mb-10 leading-relaxed"
             >
-              GOH MUSIC API provides professional audio processing for developers. 
-              Apply Slowed + Reverb, Nightcore, Bass Boost, and more in real-time.
+              {t.hero.description}
             </motion.p>
             
             <motion.div
@@ -60,14 +62,14 @@ export default function HomePage() {
                 href="/dashboard"
                 className="group px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all flex items-center gap-2 glow-blue"
               >
-                Start Building Now
+                {t.hero.ctaPrimary}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link 
                 href="/docs"
                 className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-2xl transition-all flex items-center gap-2"
               >
-                View Documentation
+                {t.hero.ctaSecondary}
               </Link>
             </motion.div>
           </div>
@@ -77,18 +79,18 @@ export default function HomePage() {
             {[
               {
                 icon: Zap,
-                title: "Ultra Fast",
-                desc: "Optimized processing engine delivers results in seconds, not minutes."
+                title: t.features.fast.title,
+                desc: t.features.fast.desc
               },
               {
                 icon: Shield,
-                title: "Reliable",
-                desc: "99.9% uptime guarantee with robust error handling and scalability."
+                title: t.features.reliable.title,
+                desc: t.features.reliable.desc
               },
               {
                 icon: Code,
-                title: "Dev Friendly",
-                desc: "Simple REST API with comprehensive documentation and SDK examples."
+                title: t.features.devFriendly.title,
+                desc: t.features.devFriendly.desc
               }
             ].map((feature, i) => (
               <motion.div
@@ -112,9 +114,9 @@ export default function HomePage() {
           <div className="rounded-[40px] bg-gradient-to-b from-blue-600/10 to-transparent border border-blue-500/20 p-12 md:p-20 text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 blur-[100px] -z-10" />
             
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">5 Professional Effects</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">{t.effects.title}</h2>
             <p className="text-slate-400 max-w-xl mx-auto mb-12">
-              Our API comes pre-loaded with the most popular audio effects used by creators worldwide.
+              {t.effects.desc}
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">

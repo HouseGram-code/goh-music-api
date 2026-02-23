@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import { motion } from 'motion/react';
 import { Code, Terminal, Book, Cpu, Globe, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from '@/lib/LanguageContext';
 
 const PYTHON_EXAMPLE = `import requests
 
@@ -59,6 +60,7 @@ def handle_audio(message):
 bot.polling()`;
 
 export default function DocsPage() {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState<string | null>(null);
 
   const copy = (text: string, id: string) => {
@@ -74,8 +76,8 @@ export default function DocsPage() {
       <main className="pt-32 pb-20 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="mb-16">
-            <h1 className="text-5xl font-bold mb-6">Documentation</h1>
-            <p className="text-xl text-slate-400">Learn how to integrate GOH MUSIC API into your applications.</p>
+            <h1 className="text-5xl font-bold mb-6">{t.docs.title}</h1>
+            <p className="text-xl text-slate-400">{t.docs.subtitle}</p>
           </div>
 
           {/* Quick Start */}
@@ -84,7 +86,7 @@ export default function DocsPage() {
               <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
                 <Globe className="w-5 h-5 text-blue-500" />
               </div>
-              <h2 className="text-3xl font-bold">API Reference</h2>
+              <h2 className="text-3xl font-bold">{t.docs.apiRef}</h2>
             </div>
 
             <div className="space-y-8">
@@ -95,7 +97,7 @@ export default function DocsPage() {
                 </div>
                 <p className="text-slate-400 mb-6">Process an audio file with a specific effect.</p>
                 
-                <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-slate-500">Headers</h4>
+                <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-slate-500">{t.docs.headers}</h4>
                 <div className="bg-black/40 rounded-xl p-4 border border-white/5 mb-6">
                   <div className="flex justify-between items-center py-2 border-b border-white/5">
                     <span className="font-mono text-sm">x-api-key</span>
@@ -107,7 +109,7 @@ export default function DocsPage() {
                   </div>
                 </div>
 
-                <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-slate-500">Body Parameters</h4>
+                <h4 className="font-bold mb-4 text-sm uppercase tracking-wider text-slate-500">{t.docs.bodyParams}</h4>
                 <div className="bg-black/40 rounded-xl p-4 border border-white/5">
                   <div className="flex justify-between items-center py-2 border-b border-white/5">
                     <span className="font-mono text-sm">file</span>
@@ -129,7 +131,7 @@ export default function DocsPage() {
                 <div className="w-10 h-10 bg-yellow-600/20 rounded-lg flex items-center justify-center">
                   <Terminal className="w-5 h-5 text-yellow-500" />
                 </div>
-                <h2 className="text-3xl font-bold">Python Example</h2>
+                <h2 className="text-3xl font-bold">{t.docs.pythonExample}</h2>
               </div>
               <button 
                 onClick={() => copy(PYTHON_EXAMPLE, 'py')}
@@ -151,7 +153,7 @@ export default function DocsPage() {
                 <div className="w-10 h-10 bg-blue-400/20 rounded-lg flex items-center justify-center">
                   <Cpu className="w-5 h-5 text-blue-400" />
                 </div>
-                <h2 className="text-3xl font-bold">Telegram Bot (pyTelegramBotAPI)</h2>
+                <h2 className="text-3xl font-bold">{t.docs.telegramExample}</h2>
               </div>
               <button 
                 onClick={() => copy(TELEGRAM_BOT_EXAMPLE, 'tg')}
@@ -168,31 +170,24 @@ export default function DocsPage() {
 
           {/* Pricing/Tokens */}
           <section className="p-12 rounded-[40px] bg-blue-600/10 border border-blue-500/20">
-            <h2 className="text-3xl font-bold mb-6">Token Usage</h2>
+            <h2 className="text-3xl font-bold mb-6">{t.docs.tokenUsage}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
                 <p className="text-slate-400 mb-6">
-                  Every processing request consumes tokens from your balance. 
-                  Standard processing costs are fixed regardless of file size (up to 20MB).
+                  {t.docs.tokenDesc}
                 </p>
                 <div className="flex items-center gap-4 p-6 bg-black/40 rounded-2xl border border-white/5">
                   <div className="text-3xl font-bold text-blue-500">25</div>
-                  <div className="text-slate-400 font-medium uppercase tracking-wider text-xs">Tokens per request</div>
+                  <div className="text-slate-400 font-medium uppercase tracking-wider text-xs">{t.docs.tokenCost}</div>
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center gap-3 text-slate-300">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                  Initial balance: 200,000 tokens
-                </div>
-                <div className="flex items-center gap-3 text-slate-300">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                  Real-time balance updates
-                </div>
-                <div className="flex items-center gap-3 text-slate-300">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                  Auto-rejection on zero balance
-                </div>
+                {t.docs.tokenFeatures.map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3 text-slate-300">
+                    <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                    {feature}
+                  </div>
+                ))}
               </div>
             </div>
           </section>

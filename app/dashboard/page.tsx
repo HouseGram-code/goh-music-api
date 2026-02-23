@@ -5,8 +5,10 @@ import Navbar from '@/components/Navbar';
 import { motion } from 'motion/react';
 import { Key, Wallet, RefreshCw, Copy, Check, Music, Upload, Play, Download, AlertCircle, Sparkles } from 'lucide-react';
 import { User } from '@/lib/db';
+import { useTranslation } from '@/lib/LanguageContext';
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -98,8 +100,8 @@ export default function DashboardPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-12">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Developer Dashboard</h1>
-              <p className="text-slate-400 text-lg">Manage your API keys and monitor usage.</p>
+              <h1 className="text-4xl font-bold mb-2">{t.dashboard.title}</h1>
+              <p className="text-slate-400 text-lg">{t.dashboard.subtitle}</p>
             </div>
             <button 
               onClick={fetchUser}
@@ -116,7 +118,7 @@ export default function DashboardPage() {
                 <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
                   <Key className="w-5 h-5 text-blue-500" />
                 </div>
-                <h3 className="text-xl font-bold">Your API Key</h3>
+                <h3 className="text-xl font-bold">{t.dashboard.apiKey}</h3>
               </div>
               
               <div className="flex items-center gap-2 p-4 bg-black/40 rounded-2xl border border-white/5 font-mono text-sm">
@@ -129,7 +131,7 @@ export default function DashboardPage() {
                 </button>
               </div>
               <p className="mt-4 text-xs text-slate-500">
-                Keep this key secret. Use it in the <code className="text-blue-400">x-api-key</code> header for all requests.
+                {t.dashboard.apiKeyHint}
               </p>
             </div>
 
@@ -139,19 +141,19 @@ export default function DashboardPage() {
                 <div className="w-10 h-10 bg-blue-600/20 rounded-lg flex items-center justify-center">
                   <Wallet className="w-5 h-5 text-blue-500" />
                 </div>
-                <h3 className="text-xl font-bold">Balance</h3>
+                <h3 className="text-xl font-bold">{t.dashboard.balance}</h3>
               </div>
               
               <div className="mb-2">
                 <span className="text-4xl font-bold text-white">{user?.balance.toLocaleString()}</span>
-                <span className="ml-2 text-slate-400 font-medium">Tokens</span>
+                <span className="ml-2 text-slate-400 font-medium">{t.dashboard.tokens}</span>
               </div>
               <p className="text-sm text-slate-400 mb-6">
-                {user?.totalProcessed} requests processed
+                {user?.totalProcessed} {t.dashboard.processed}
               </p>
               
               <button className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all">
-                Top Up Balance
+                {t.dashboard.topUp}
               </button>
             </div>
           </div>
@@ -162,13 +164,13 @@ export default function DashboardPage() {
               <div className="w-10 h-10 bg-indigo-600/20 rounded-lg flex items-center justify-center">
                 <Play className="w-5 h-5 text-indigo-500" />
               </div>
-              <h3 className="text-xl font-bold">API Playground</h3>
+              <h3 className="text-xl font-bold">{t.dashboard.playground}</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Upload Audio (MP3)</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">{t.dashboard.uploadLabel}</label>
                   <div className="relative group">
                     <input 
                       type="file" 
@@ -179,14 +181,14 @@ export default function DashboardPage() {
                     <div className="p-8 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center group-hover:border-blue-500/50 transition-colors">
                       <Upload className="w-8 h-8 text-slate-500 mb-2 group-hover:text-blue-500 transition-colors" />
                       <span className="text-sm text-slate-400">
-                        {testFile ? testFile.name : 'Click or drag to upload'}
+                        {testFile ? testFile.name : t.dashboard.uploadHint}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Select Effect</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">{t.dashboard.effectLabel}</label>
                   <select 
                     value={testEffect}
                     onChange={(e) => setTestEffect(e.target.value)}
@@ -208,12 +210,12 @@ export default function DashboardPage() {
                   {processing ? (
                     <>
                       <RefreshCw className="w-5 h-5 animate-spin" />
-                      Processing...
+                      {t.dashboard.processing}
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-5 h-5" />
-                      Process Audio (-25 Tokens)
+                      {t.dashboard.processBtn}
                     </>
                   )}
                 </button>
@@ -232,7 +234,7 @@ export default function DashboardPage() {
                     <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Music className="w-10 h-10 text-green-500" />
                     </div>
-                    <h4 className="text-xl font-bold">Processing Complete!</h4>
+                    <h4 className="text-xl font-bold">{t.dashboard.complete}</h4>
                     <audio src={resultUrl} controls className="w-full" />
                     <a 
                       href={resultUrl} 
@@ -240,13 +242,13 @@ export default function DashboardPage() {
                       className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-colors"
                     >
                       <Download className="w-5 h-5" />
-                      Download MP3
+                      {t.dashboard.download}
                     </a>
                   </div>
                 ) : (
                   <div className="text-center text-slate-500">
                     <Music className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                    <p>Processed audio will appear here</p>
+                    <p>{t.dashboard.emptyResult}</p>
                   </div>
                 )}
               </div>
