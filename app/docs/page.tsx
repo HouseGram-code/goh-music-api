@@ -2,7 +2,7 @@
 
 import Navbar from '@/components/Navbar';
 import { motion } from 'motion/react';
-import { Code, Terminal, Book, Cpu, Globe, Copy, Check } from 'lucide-react';
+import { Code, Terminal, Book, Cpu, Globe, Copy, Check, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from '@/lib/LanguageContext';
 
@@ -33,31 +33,51 @@ const TELEGRAM_BOT_EXAMPLE = `import telebot
 import requests
 import io
 
-bot = telebot.TeleBot("YOUR_TELEGRAM_BOT_TOKEN")
+# Your Telegram Bot Token
+BOT_TOKEN = "7828284369:AAFfTcvEoobExHgkbVNzRPfOCzwtZdLBBgc"
+# Your GOH MUSIC API Key (get it from Dashboard)
 API_KEY = "YOUR_GOH_API_KEY"
 API_URL = "https://goh-music-api-mu.vercel.app/api/audio/process"
 
+bot = telebot.TeleBot(BOT_TOKEN)
+
+@bot.message_handler(commands=['start', 'help'])
+def send_welcome(message):
+    bot.reply_to(message, "Welcome! Send me an MP3 file and I will apply Slowed + Reverb effect to it. 🎧")
+
 @bot.message_handler(content_types=['audio'])
 def handle_audio(message):
-    bot.reply_to(message, "Processing your music... 🎧")
-    
-    # Get file info
-    file_info = bot.get_file(message.audio.file_id)
-    downloaded_file = bot.download_file(file_info.file_path)
-    
-    # Send to GOH MUSIC API
-    files = {'file': ('audio.mp3', downloaded_file, 'audio/mpeg')}
-    data = {'effect': 'slowed'} # You can add buttons to choose effect
-    headers = {'x-api-key': API_KEY}
-    
-    response = requests.post(API_URL, headers=headers, files=files, data=data)
-    
-    if response.status_code == 200:
-        bot.send_audio(message.chat.id, response.content, caption="Processed by GOH MUSIC API")
-    else:
-        bot.reply_to(message, f"Error: {response.json().get('error')}")
+    try:
+        msg = bot.reply_to(message, "Processing your music... ⏳")
+        
+        # Get file info
+        file_info = bot.get_file(message.audio.file_id)
+        downloaded_file = bot.download_file(file_info.file_path)
+        
+        # Send to GOH MUSIC API
+        files = {'file': ('audio.mp3', downloaded_file, 'audio/mpeg')}
+        data = {'effect': 'slowed'} 
+        headers = {'x-api-key': API_KEY}
+        
+        response = requests.post(API_URL, headers=headers, files=files, data=data)
+        
+        if response.status_code == 200:
+            bot.send_audio(
+                message.chat.id, 
+                response.content, 
+                caption="Processed by GOH MUSIC API 🚀",
+                reply_to_message_id=message.message_id
+            )
+            bot.delete_message(message.chat.id, msg.message_id)
+        else:
+            error_msg = response.json().get('error', 'Unknown error')
+            bot.edit_message_text(f"❌ Error: {error_msg}", message.chat.id, msg.message_id)
+            
+    except Exception as e:
+        bot.reply_to(message, f"❌ System Error: {str(e)}")
 
-bot.polling()`;
+print("Bot is running...")
+bot.infinity_polling()`;
 
 export default function DocsPage() {
   const { t } = useTranslation();
@@ -163,8 +183,21 @@ export default function DocsPage() {
                 Copy Code
               </button>
             </div>
-            <div className="bg-black/60 rounded-3xl p-8 border border-white/10 overflow-x-auto font-mono text-sm leading-relaxed text-blue-300">
+            <div className="bg-black/60 rounded-3xl p-8 border border-white/10 overflow-x-auto font-mono text-sm leading-relaxed text-blue-300 mb-6">
               <pre>{TELEGRAM_BOT_EXAMPLE}</pre>
+            </div>
+            
+            <div className="p-6 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+              <h4 className="font-bold mb-2 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-blue-400" />
+                How to run 24/7?
+              </h4>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                To keep your bot running 24/7, we recommend using a process manager like <strong>PM2</strong> or running it on a VPS (Ubuntu/Debian).
+                <br /><br />
+                <code className="bg-black/40 px-2 py-1 rounded text-blue-300">pip install pyTelegramBotAPI requests</code><br />
+                <code className="bg-black/40 px-2 py-1 rounded text-blue-300">nohup python3 bot.py &</code>
+              </p>
             </div>
           </section>
 
