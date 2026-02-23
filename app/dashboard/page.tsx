@@ -17,20 +17,30 @@ export default function DashboardPage() {
   const [processing, setProcessing] = useState(false);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginKey, setLoginKey] = useState('');
 
   useEffect(() => {
     fetchUser();
   }, []);
 
-  const fetchUser = async () => {
+  const fetchUser = async (keyToUse?: string) => {
     try {
       setLoading(true);
-      const storedKey = typeof window !== 'undefined' ? localStorage.getItem('goh_api_key') : null;
+      setError(null);
+      const storedKey = keyToUse || (typeof window !== 'undefined' ? localStorage.getItem('goh_api_key') : null);
+      
       let url = storedKey ? `/api/user?apiKey=${storedKey}` : '/api/user';
       let res = await fetch(url);
       
       if (res.status === 404 && storedKey) {
-        // Stale key, clear and get a new one
+        // If we tried a specific key and it's not found
+        if (keyToUse) {
+          setError('Invalid API Key. Account not found.');
+          setLoading(false);
+          return;
+        }
+        // Stale auto-loaded key, clear and get a new one
         localStorage.removeItem('goh_api_key');
         res = await fetch('/api/user');
       }
@@ -40,6 +50,7 @@ export default function DashboardPage() {
       if (data.apiKey) {
         setUser(data);
         localStorage.setItem('goh_api_key', data.apiKey);
+        setShowLogin(false);
       } else if (data.error) {
         setError(data.error);
       }
@@ -49,6 +60,19 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loginKey.trim()) {
+      fetchUser(loginKey.trim());
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('goh_api_key');
+    setUser(null);
+    fetchUser(); // This will create a new anonymous account
   };
 
   const copyToClipboard = (text: string) => {
@@ -114,13 +138,52 @@ export default function DashboardPage() {
               <h1 className="text-4xl font-bold mb-2">{t.dashboard.title}</h1>
               <p className="text-slate-400 text-lg">{t.dashboard.subtitle}</p>
             </div>
-            <button 
-              onClick={fetchUser}
-              className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
-            >
-              <RefreshCw className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowLogin(!showLogin)}
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-sm font-medium"
+              >
+                {showLogin ? 'Cancel' : 'Login with Key'}
+              </button>
+              <button 
+                onClick={() => fetchUser()}
+                className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+              >
+                <RefreshCw className="w-5 h-5" />
+              </button>
+            </div>
           </div>
+
+          {showLogin && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 p-6 rounded-3xl bg-blue-600/5 border border-blue-500/20"
+            >
+              <form onSubmit={handleLogin} className="flex flex-col md:flex-row gap-4">
+                <input 
+                  type="text"
+                  placeholder="Enter your API Key (goh_...)"
+                  value={loginKey}
+                  onChange={(e) => setLoginKey(e.target.value)}
+                  className="flex-1 p-4 bg-black/40 border border-white/10 rounded-2xl text-white outline-none focus:border-blue-500 transition-colors font-mono text-sm"
+                />
+                <button 
+                  type="submit"
+                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all"
+                >
+                  Restore Account
+                </button>
+              </form>
+            </motion.div>
+          )}
+
+          {error && (
+            <div className="mb-8 flex items-center gap-2 text-red-400 bg-red-400/10 p-4 rounded-xl">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm">{error}</span>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {/* API Key Card */}
@@ -233,13 +296,6 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex flex-col items-center justify-center p-8 bg-black/40 rounded-3xl border border-white/5">
-                {error && (
-                  <div className="flex items-center gap-2 text-red-400 mb-4 bg-red-400/10 p-4 rounded-xl w-full">
-                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                    <span className="text-sm">{error}</span>
-                  </div>
-                )}
-
                 {resultUrl ? (
                   <div className="w-full space-y-6 text-center">
                     <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
