@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
-import { getUserByApiKey, deductBalance } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -51,21 +50,6 @@ const EFFECTS = {
 };
 
 export async function POST(req: NextRequest) {
-  const apiKey = req.headers.get('x-api-key');
-  
-  if (!apiKey) {
-    return NextResponse.json({ error: 'API key is required' }, { status: 401 });
-  }
-
-  const user = getUserByApiKey(apiKey);
-  if (!user) {
-    return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
-  }
-
-  if (user.balance < 25) {
-    return NextResponse.json({ error: 'Insufficient balance. Please top up.' }, { status: 402 });
-  }
-
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
@@ -95,9 +79,6 @@ export async function POST(req: NextRequest) {
         .on('end', async () => {
           const outputBuffer = fs.readFileSync(outputPath);
           
-          // Deduct balance
-          deductBalance(user.id, 25);
-
           // Cleanup
           await unlink(inputPath);
           await unlink(outputPath);
@@ -106,7 +87,6 @@ export async function POST(req: NextRequest) {
             headers: {
               'Content-Type': 'audio/mpeg',
               'Content-Disposition': `attachment; filename="goh_music_${effect}.mp3"`,
-              'X-Balance-Remaining': (user.balance - 25).toString()
             }
           }));
         })

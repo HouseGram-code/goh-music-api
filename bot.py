@@ -6,10 +6,6 @@ import os
 BOT_TOKEN = "7828284369:AAFfTcvEoobExHgkbVNzRPfOCzwtZdLBBgc"
 API_URL = "https://goh-music-api-mu.vercel.app/api/audio/process"
 
-# IMPORTANT: Replace this with your actual API key from the dashboard
-# You can also set it as an environment variable GOH_API_KEY
-API_KEY = os.getenv("GOH_API_KEY", "YOUR_API_KEY_HERE")
-
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start', 'help'])
@@ -17,18 +13,12 @@ def send_welcome(message):
     welcome_text = (
         "👋 Привет! Я бот GOH MUSIC API.\n\n"
         "Отправь мне MP3 файл, и я применю к нему эффект Slowed + Reverb.\n\n"
-        "⚠️ Для работы мне нужен API Key. Получи его здесь:\n"
-        "👉 https://goh-music-api-mu.vercel.app/dashboard\n\n"
-        "Вставь полученный ключ в код бота (переменная API_KEY)."
+        "API теперь полностью открыто и не требует ключей! 🚀"
     )
     bot.reply_to(message, welcome_text)
 
 @bot.message_handler(content_types=['audio'])
 def handle_audio(message):
-    if API_KEY == "YOUR_API_KEY_HERE":
-        bot.reply_to(message, "❌ Ошибка: API Key не настроен. Пожалуйста, укажите ваш API Key в коде бота.")
-        return
-
     try:
         status_msg = bot.reply_to(message, "⏳ Обработка аудио... Пожалуйста, подождите.")
         
@@ -39,9 +29,8 @@ def handle_audio(message):
         # 2. Отправляем файл на GOH MUSIC API
         files = {'file': ('audio.mp3', downloaded_file, 'audio/mpeg')}
         data = {'effect': 'slowed'} 
-        headers = {'x-api-key': API_KEY}
         
-        response = requests.post(API_URL, headers=headers, files=files, data=data)
+        response = requests.post(API_URL, files=files, data=data)
         
         if response.status_code == 200:
             # 3. Отправляем результат обратно пользователю
