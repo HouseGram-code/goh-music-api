@@ -9,7 +9,7 @@ import { useTranslation } from '@/lib/LanguageContext';
 const PYTHON_EXAMPLE = `import requests
 
 API_KEY = "YOUR_API_KEY"
-API_URL = "https://goh-music-api.run.app/api/audio/process"
+API_URL = "https://goh-music-api-mu.vercel.app/api/audio/process"
 
 def apply_effect(file_path, effect="slowed"):
     with open(file_path, "rb") as f:
@@ -35,7 +35,7 @@ import io
 
 bot = telebot.TeleBot("YOUR_TELEGRAM_BOT_TOKEN")
 API_KEY = "YOUR_GOH_API_KEY"
-API_URL = "https://goh-music-api.run.app/api/audio/process"
+API_URL = "https://goh-music-api-mu.vercel.app/api/audio/process"
 
 @bot.message_handler(content_types=['audio'])
 def handle_audio(message):
