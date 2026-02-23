@@ -1,12 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 
 const DB_PATH = path.join(process.cwd(), 'data', 'db.json');
 
 export interface User {
   id: string;
   apiKey: string;
+  name: string;
+  email: string;
   balance: number;
   totalProcessed: number;
   createdAt: string;
@@ -46,11 +49,13 @@ export function saveUsers(users: User[]) {
   }
 }
 
-export function createUser(): User {
+export function createUser(name: string = 'Anonymous', email: string = ''): User {
   const users = getUsers();
   const newUser: User = {
     id: uuidv4(),
-    apiKey: `goh_${uuidv4().replace(/-/g, '')}`,
+    apiKey: `goh_${nanoid(32)}`,
+    name,
+    email,
     balance: 200000,
     totalProcessed: 0,
     createdAt: new Date().toISOString(),
@@ -63,6 +68,11 @@ export function createUser(): User {
 export function getUserByApiKey(apiKey: string): User | undefined {
   const users = getUsers();
   return users.find(u => u.apiKey === apiKey);
+}
+
+export function getUserByEmail(email: string): User | undefined {
+  const users = getUsers();
+  return users.find(u => u.email.toLowerCase() === email.toLowerCase());
 }
 
 export function deductBalance(userId: string, amount: number): boolean {

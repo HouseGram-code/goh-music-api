@@ -19,30 +19,35 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [loginKey, setLoginKey] = useState('');
+  
+  // Registration state
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [registering, setRegistering] = useState(false);
 
   useEffect(() => {
-    fetchUser();
+    const storedKey = localStorage.getItem('goh_api_key');
+    if (storedKey) {
+      fetchUser(storedKey);
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  const fetchUser = async (keyToUse?: string) => {
+  const fetchUser = async (keyToUse: string) => {
     try {
       setLoading(true);
       setError(null);
-      const storedKey = keyToUse || (typeof window !== 'undefined' ? localStorage.getItem('goh_api_key') : null);
       
-      let url = storedKey ? `/api/user?apiKey=${storedKey}` : '/api/user';
+      let url = `/api/user?apiKey=${keyToUse}`;
       let res = await fetch(url);
       
-      if (res.status === 404 && storedKey) {
-        // If we tried a specific key and it's not found
-        if (keyToUse) {
-          setError('Invalid API Key. Account not found.');
-          setLoading(false);
-          return;
-        }
-        // Stale auto-loaded key, clear and get a new one
+      if (res.status === 404) {
+        setError('Invalid API Key. Account not found.');
         localStorage.removeItem('goh_api_key');
-        res = await fetch('/api/user');
+        setUser(null);
+        setLoading(false);
+        return;
       }
 
       const data = await res.json();
@@ -62,6 +67,35 @@ export default function DashboardPage() {
     }
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regName || !regEmail) return;
+
+    setRegistering(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: regName, email: regEmail }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.apiKey) {
+        setUser(data);
+        localStorage.setItem('goh_api_key', data.apiKey);
+      } else {
+        setError(data.error || 'Registration failed');
+      }
+    } catch (err) {
+      setError('Registration failed. Please try again.');
+    } finally {
+      setRegistering(false);
+    }
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (loginKey.trim()) {
@@ -72,7 +106,6 @@ export default function DashboardPage() {
   const logout = () => {
     localStorage.removeItem('goh_api_key');
     setUser(null);
-    fetchUser(); // This will create a new anonymous account
   };
 
   const copyToClipboard = (text: string) => {
@@ -111,7 +144,7 @@ export default function DashboardPage() {
       setResultUrl(url);
       
       // Refresh user balance
-      fetchUser();
+      fetchUser(user.apiKey);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -133,59 +166,120 @@ export default function DashboardPage() {
       
       <main className="pt-32 pb-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-12">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">{t.dashboard.title}</h1>
-              <p className="text-slate-400 text-lg">{t.dashboard.subtitle}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setShowLogin(!showLogin)}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-sm font-medium"
-              >
-                {showLogin ? 'Cancel' : 'Login with Key'}
-              </button>
-              <button 
-                onClick={() => fetchUser()}
-                className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
-              >
-                <RefreshCw className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+          {!user ? (
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-12">
+                <h1 className="text-4xl font-bold mb-4">Welcome to GOH MUSIC</h1>
+                <p className="text-slate-400">Register to get your API key and start processing audio.</p>
+              </div>
 
-          {showLogin && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8 p-6 rounded-3xl bg-blue-600/5 border border-blue-500/20"
-            >
-              <form onSubmit={handleLogin} className="flex flex-col md:flex-row gap-4">
-                <input 
-                  type="text"
-                  placeholder="Enter your API Key (goh_...)"
-                  value={loginKey}
-                  onChange={(e) => setLoginKey(e.target.value)}
-                  className="flex-1 p-4 bg-black/40 border border-white/10 rounded-2xl text-white outline-none focus:border-blue-500 transition-colors font-mono text-sm"
-                />
-                <button 
-                  type="submit"
-                  className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all"
-                >
-                  Restore Account
-                </button>
-              </form>
-            </motion.div>
-          )}
+              <div className="p-8 rounded-3xl bg-white/5 border border-white/10">
+                <form onSubmit={handleRegister} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">Full Name</label>
+                    <input 
+                      type="text"
+                      required
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      placeholder="John Doe"
+                      className="w-full p-4 bg-black/40 border border-white/10 rounded-2xl text-white outline-none focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-400 mb-2">Email Address</label>
+                    <input 
+                      type="email"
+                      required
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      placeholder="john@example.com"
+                      className="w-full p-4 bg-black/40 border border-white/10 rounded-2xl text-white outline-none focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    disabled={registering}
+                    className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2"
+                  >
+                    {registering ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                    Create Account
+                  </button>
+                </form>
 
-          {error && (
-            <div className="mb-8 flex items-center gap-2 text-red-400 bg-red-400/10 p-4 rounded-xl">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <span className="text-sm">{error}</span>
+                <div className="mt-8 pt-8 border-t border-white/5 text-center">
+                  <button 
+                    onClick={() => setShowLogin(!showLogin)}
+                    className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                  >
+                    {showLogin ? 'Back to Registration' : 'Already have an API Key? Restore Account'}
+                  </button>
+                </div>
+
+                {showLogin && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-6 pt-6 border-t border-white/5"
+                  >
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <input 
+                        type="text"
+                        required
+                        placeholder="Enter your API Key (goh_...)"
+                        value={loginKey}
+                        onChange={(e) => setLoginKey(e.target.value)}
+                        className="w-full p-4 bg-black/40 border border-white/10 rounded-2xl text-white outline-none focus:border-blue-500 transition-colors font-mono text-sm"
+                      />
+                      <button 
+                        type="submit"
+                        className="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all"
+                      >
+                        Restore Account
+                      </button>
+                    </form>
+                  </motion.div>
+                )}
+              </div>
+
+              {error && (
+                <div className="mt-6 flex items-center gap-2 text-red-400 bg-red-400/10 p-4 rounded-xl">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm">{error}</span>
+                </div>
+              )}
             </div>
-          )}
+          ) : (
+            <>
+              <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-12">
+                <div>
+                  <h1 className="text-4xl font-bold mb-2">Hello, {user.name}!</h1>
+                  <p className="text-slate-400 text-lg">{user.email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={logout}
+                    className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-colors text-sm font-medium"
+                  >
+                    Logout
+                  </button>
+                  <button 
+                    onClick={() => fetchUser(user.apiKey)}
+                    className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              {error && (
+                <div className="mb-8 flex items-center gap-2 text-red-400 bg-red-400/10 p-4 rounded-xl">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm">{error}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {/* API Key Card */}
             <div className="md:col-span-2 p-8 rounded-3xl bg-white/5 border border-white/10">
               <div className="flex items-center gap-3 mb-6">
@@ -321,8 +415,10 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </>
+      )}
     </div>
-  );
+  </main>
+</div>
+);
 }

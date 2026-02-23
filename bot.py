@@ -16,8 +16,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 def send_welcome(message):
     welcome_text = (
         "👋 Привет! Я бот GOH MUSIC API.\n\n"
-        "Отправь мне MP3 файл, и я применю к нему эффект Slowed + Reverb.\n"
-        "Убедись, что ты указал правильный API Key в коде бота!"
+        "Отправь мне MP3 файл, и я применю к нему эффект Slowed + Reverb.\n\n"
+        "⚠️ Для работы мне нужен API Key. Получи его здесь:\n"
+        "👉 https://goh-music-api-mu.vercel.app/dashboard\n\n"
+        "Вставь полученный ключ в код бота (переменная API_KEY)."
     )
     bot.reply_to(message, welcome_text)
 
