@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import ffmpeg from 'fluent-ffmpeg';
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import { getUserByApiKey, deductBalance } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { promisify } from 'util';
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const writeFile = promisify(fs.writeFile);
 const unlink = promisify(fs.unlink);

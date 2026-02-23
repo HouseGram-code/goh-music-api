@@ -24,17 +24,28 @@ export default function DashboardPage() {
 
   const fetchUser = async () => {
     try {
-      const storedKey = localStorage.getItem('goh_api_key');
-      const url = storedKey ? `/api/user?apiKey=${storedKey}` : '/api/user';
-      const res = await fetch(url);
+      setLoading(true);
+      const storedKey = typeof window !== 'undefined' ? localStorage.getItem('goh_api_key') : null;
+      let url = storedKey ? `/api/user?apiKey=${storedKey}` : '/api/user';
+      let res = await fetch(url);
+      
+      if (res.status === 404 && storedKey) {
+        // Stale key, clear and get a new one
+        localStorage.removeItem('goh_api_key');
+        res = await fetch('/api/user');
+      }
+
       const data = await res.json();
       
       if (data.apiKey) {
         setUser(data);
         localStorage.setItem('goh_api_key', data.apiKey);
+      } else if (data.error) {
+        setError(data.error);
       }
     } catch (err) {
       console.error('Failed to fetch user:', err);
+      setError('Connection error. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -27,14 +27,23 @@ function ensureDb() {
 }
 
 export function getUsers(): User[] {
-  ensureDb();
-  const data = fs.readFileSync(DB_PATH, 'utf-8');
-  return JSON.parse(data).users;
+  try {
+    ensureDb();
+    const data = fs.readFileSync(DB_PATH, 'utf-8');
+    return JSON.parse(data).users || [];
+  } catch (error) {
+    console.error('Error reading database:', error);
+    return [];
+  }
 }
 
 export function saveUsers(users: User[]) {
-  ensureDb();
-  fs.writeFileSync(DB_PATH, JSON.stringify({ users }, null, 2));
+  try {
+    ensureDb();
+    fs.writeFileSync(DB_PATH, JSON.stringify({ users }, null, 2));
+  } catch (error) {
+    console.error('Error saving database:', error);
+  }
 }
 
 export function createUser(): User {

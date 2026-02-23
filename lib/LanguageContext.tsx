@@ -12,15 +12,17 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('goh_lang') as Language;
-      if (saved && (saved === 'en' || saved === 'ru')) {
-        return saved;
-      }
+  const [language, setLanguageState] = useState<Language>('en');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+    const saved = localStorage.getItem('goh_lang') as Language;
+    if (saved && (saved === 'en' || saved === 'ru')) {
+      setLanguageState(saved);
     }
-    return 'en';
-  });
+  }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
@@ -29,7 +31,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const t = translations[language];
+  // Use English as fallback during SSR and initial hydration
+  const t = mounted ? translations[language] : translations.en;
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

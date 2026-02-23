@@ -10,6 +10,7 @@
     "clean": "next clean"
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@google/genai": "^1.17.0",
     "@hookform/resolvers": "^5.2.1",
     "@types/fluent-ffmpeg": "^2.1.28",
